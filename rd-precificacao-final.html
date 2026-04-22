@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RD Performance — Tabela de Precificação & DFC</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#010133;--blue:#113B9F;--ice:#E0EBFF;
+  --pale:#F8FAFC;--white:#FFFFFF;--gray:#E2E8F0;--gray2:#f1f5f9;
+  --text:#1a2240;--muted:#64748b;--light:#94a3b8;
+  --red:#DC2626;--amber:#D97706;--green:#059669;--teal:#0891b2;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--pale);color:var(--text);font-size:14px;line-height:1.6;overflow-x:hidden}
+
+.topbar{background:var(--navy);padding:0 40px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.topbar-brand{font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:white;letter-spacing:3px}
+.topbar-brand span{color:#5b8bff;font-weight:400}
+.topbar-nav{display:flex;gap:20px}
+.topbar-nav a{color:rgba(255,255,255,.5);text-decoration:none;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;transition:color .2s;border-bottom:1px solid transparent}
+.topbar-nav a:hover,.topbar-nav a.on{color:white;border-bottom-color:rgba(255,255,255,.3)}
+
+.hero{background:var(--navy);padding:52px 40px 40px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-60px;top:-60px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(17,59,159,.45) 0%,transparent 70%);pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.75);font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:5px 12px;margin-bottom:16px}
+.chip i{width:5px;height:5px;background:#5b8bff;border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.hero h1{font-family:'Montserrat',sans-serif;font-size:clamp(28px,4.5vw,54px);font-weight:900;line-height:.95;letter-spacing:-1px;color:white;margin-bottom:10px}
+.hero h1 em{font-style:normal;color:#5b8bff}
+.hero-sub{color:rgba(255,255,255,.5);font-size:13px;max-width:580px;line-height:1.7}
+
+/* PREMISSAS BANNER */
+.premissas{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--gray);border-bottom:1px solid var(--gray)}
+.pre-card{background:white;padding:18px 20px}
+.pre-tag{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;display:block;font-family:'JetBrains Mono',monospace}
+.pre-val{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:900;color:var(--navy);line-height:1;margin-bottom:4px}
+.pre-desc{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* KPI STRIP */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-bottom:1px solid var(--gray)}
+.kpi{background:white;padding:18px 16px;border-right:1px solid var(--gray)}
+.kpi:last-child{border-right:none}
+.kpi label{display:block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:600}
+.kpi .kv{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;line-height:1}
+.kpi small{font-size:10px;color:var(--light);display:block;margin-top:3px}
+.nv{color:var(--navy)}.bl{color:var(--blue)}.rd{color:var(--red)}.gn{color:var(--green)}.am{color:var(--amber)}
+
+section{padding:48px 40px;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
+section.vis{opacity:1;transform:none}
+.stag{display:inline-flex;align-items:center;gap:7px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
+.stag .d{width:5px;height:5px;background:var(--blue);border-radius:50%}
+.stitle{font-family:'Montserrat',sans-serif;font-size:clamp(22px,3vw,34px);font-weight:800;line-height:1;color:var(--navy);margin-bottom:6px}
+.stitle em{font-style:normal;color:var(--blue)}
+.sdesc{color:var(--muted);font-size:13px;max-width:640px;margin-bottom:26px;line-height:1.7}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;margin-bottom:18px;border-radius:8px;border:1px solid var(--gray)}
+.ptbl{width:100%;border-collapse:collapse;font-size:11.5px;min-width:880px}
+.ptbl thead tr{background:var(--navy)}
+.ptbl th{padding:11px 12px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6);font-weight:600;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.ptbl th:first-child{text-align:left;min-width:160px}
+.ptbl td{padding:10px 12px;border-bottom:1px solid var(--gray);text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px}
+.ptbl td:first-child{text-align:left;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--navy)}
+.ptbl tr:hover td{background:#fafbff}
+.ptbl tr:last-child td{border-bottom:none}
+.ptbl .grp td{background:var(--ice);color:var(--blue);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:7px 12px;text-align:left;font-family:'Montserrat',sans-serif}
+.ptbl .feat td{background:#f0f4ff}
+.sub{font-size:10px;color:var(--light);font-family:'Inter',sans-serif;font-weight:400;display:block;margin-top:1px}
+.cr{color:var(--red)}.ca{color:var(--amber)}.cg{color:var(--green)}.cb{color:var(--blue)}.cn{color:var(--navy)}.cl{color:var(--light)}
+.badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:4px;font-family:'Inter',sans-serif}
+.b-rd{background:#fee2e2;color:var(--red)}.b-am{background:#fef3c7;color:#92400e}
+.b-gn{background:#d1fae5;color:#065f46}.b-bl{background:var(--ice);color:var(--blue)}
+.b-nv{background:#e0e7ff;color:var(--navy)}.b-st{background:var(--navy);color:white}
+.b-tl{background:#e0f2fe;color:var(--teal)}
+
+/* CARDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.card{background:white;border:1px solid var(--gray);border-radius:10px;padding:20px}
+.card.ok{background:#f0fdf4;border-left:3px solid var(--green);border-radius:0 10px 10px 0}
+.card.warn{background:#fffbeb;border-left:3px solid var(--amber);border-radius:0 10px 10px 0}
+.card.info{background:#eff6ff;border-left:3px solid var(--blue);border-radius:0 10px 10px 0}
+.card.danger{background:#fef2f2;border-left:3px solid var(--red);border-radius:0 10px 10px 0}
+
+/* STRATEGY STRIP */
+.ss{background:var(--navy);border-radius:10px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:14px;flex-wrap:wrap}
+.ss-l label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:700;display:block;margin-bottom:4px}
+.ss-l h3{font-family:'Montserrat',sans-serif;font-size:19px;font-weight:900;color:white}
+.ss-l p{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;max-width:400px;line-height:1.4}
+.ss-r{display:flex;gap:18px;flex-wrap:wrap}
+.ss-s{text-align:center;min-width:80px}
+.ss-s .sv{font-family:'Montserrat',sans-serif;font-size:26px;font-weight:900;color:#5b8bff;line-height:1}
+.ss-s .sl{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+
+/* COST BARS */
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.blbl{font-size:11px;color:var(--text);width:130px;flex-shrink:0}
+.btrack{flex:1;height:8px;background:var(--ice);border-radius:3px;overflow:hidden}
+.bfill{height:100%;border-radius:3px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.bnum{font-size:10px;color:var(--muted);width:52px;text-align:right;flex-shrink:0;font-family:'JetBrains Mono',monospace;font-weight:600}
+
+/* SIMULATOR */
+.sim{background:white;border:1px solid var(--gray);border-radius:12px;overflow:hidden}
+.sim-head{background:var(--blue);padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
+.sim-head h3{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;color:white}
+.sim-reset{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:white;font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:5px 12px;cursor:pointer;border-radius:4px}
+.sim-reset:hover{background:rgba(255,255,255,.25)}
+.sim-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.sim-l{padding:22px;border-right:1px solid var(--gray)}
+.sim-r{padding:22px}
+.sim-st{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:12px;font-family:'JetBrains Mono',monospace}
+.slg{margin-bottom:13px}
+.slg label{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--text);margin-bottom:5px}
+.slg label .sv{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--blue);font-weight:500}
+.slg .hint{font-size:10px;color:var(--light);margin-top:2px}
+input[type=range]{width:100%;-webkit-appearance:none;height:3px;background:var(--gray);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--blue);border-radius:50%;cursor:pointer}
+.res-g{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.res-c{background:var(--gray2);border-radius:8px;padding:11px 13px;text-align:center}
+.res-c .rl{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;font-weight:600}
+.res-c .rv{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:900;line-height:1}
+.bkrow{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--gray)}
+.bkrow:last-child{border-bottom:none;padding-top:8px}
+.bkrow .bl2{font-size:11px;color:var(--muted)}.bkrow .bv{font-family:'JetBrains Mono',monospace;font-size:11px}
+.bkrow.tot .bl2{font-weight:700;color:var(--navy);font-size:12px}.bkrow.tot .bv{font-weight:700;font-size:12px}
+
+/* DFC */
+.dfc-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--gray)}
+.dfc-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:680px}
+.dfc-tbl th{padding:10px 13px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.65);border-bottom:1px solid rgba(255,255,255,.15);font-family:'JetBrains Mono',monospace;font-weight:400;text-align:right}
+.dfc-tbl th:first-child{text-align:left}
+.dfc-tbl th.nh{background:var(--navy)}.dfc-tbl th.bh{background:var(--blue)}.dfc-tbl th.gh{background:#065f46}
+.dfc-tbl td{padding:9px 13px;border-bottom:1px solid var(--gray);text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px}
+.dfc-tbl td:first-child{text-align:left;font-family:'Inter',sans-serif;font-size:12px;color:var(--text)}
+.dfc-tbl .grp td{background:var(--ice);color:var(--blue);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:7px 13px;text-align:left;font-family:'Montserrat',sans-serif}
+.dfc-tbl .tot td{background:var(--gray2);font-weight:700;border-top:1px solid var(--gray)}
+.dfc-tbl .tot-m td{background:var(--navy);color:white;font-weight:800}
+.dfc-tbl tr:last-child td{border-bottom:none}
+.mpos{color:var(--green)}.mneg{color:var(--red)}.mmid{color:var(--amber)}.mneu{color:var(--text)}
+.dp{color:var(--green);font-size:10px}.dn{color:var(--red);font-size:10px}
+
+/* SCENARIOS */
+.sc-g{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}
+.sc-c{border-radius:10px;padding:18px;border:2px solid var(--gray);background:white}
+.sc-c.best{border-color:var(--blue);box-shadow:0 0 0 4px rgba(17,59,159,.07)}
+.sc-tag{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:6px}
+.sc-name{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px}
+.sc-rev{font-family:'Montserrat',sans-serif;font-size:24px;font-weight:900;line-height:1;margin-bottom:6px}
+.sc-rows{display:flex;flex-direction:column;gap:4px}
+.sc-row{display:flex;justify-content:space-between;font-size:11px}
+.sc-row .sl2{color:var(--muted)}.sc-row .sv2{font-family:'JetBrains Mono',monospace;font-size:10px}
+
+/* FIDELITY */
+.fidtabs{display:flex;gap:0;border:1px solid var(--gray);border-radius:8px;overflow:hidden;margin-bottom:20px;background:var(--gray2)}
+.fidtab{flex:1;background:none;border:none;padding:11px 14px;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all .2s}
+.fidtab.on{background:var(--navy);color:white}
+.fidpanel{display:none}.fidpanel.on{display:block}
+.fid-tbl{width:100%;border-collapse:collapse;font-size:11.5px;min-width:720px}
+.fid-tbl thead tr{background:var(--navy)}
+.fid-tbl th{padding:10px 12px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6);font-family:'JetBrains Mono',monospace;font-weight:400;white-space:nowrap}
+.fid-tbl th:first-child{text-align:left;min-width:130px}
+.fid-tbl td{padding:10px 12px;border-bottom:1px solid var(--gray);text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px}
+.fid-tbl td:first-child{text-align:left;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--navy)}
+.fid-tbl tr:last-child td{border-bottom:none}
+.fid-tbl .fgrp td{background:var(--ice);color:var(--blue);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:7px 12px;text-align:left;font-family:'Montserrat',sans-serif}
+.fid-tbl .feat td{background:#f0f4ff}
+.cr{color:var(--red)}.ca{color:var(--amber)}.cg{color:var(--green)}.cb{color:var(--blue)}.cl{color:var(--light)}
+.badge-sm{display:inline-block;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:4px}
+.bs-gn{background:#d1fae5;color:#065f46}.bs-bl{background:var(--ice);color:var(--blue)}.bs-am{background:#fef3c7;color:#92400e}.bs-nv{background:#e0e7ff;color:var(--navy)}
+.benefit-box{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.ben-card{background:white;border:1px solid var(--gray);border-radius:10px;padding:18px;position:relative;overflow:hidden}
+.ben-card::after{content:'';position:absolute;top:0;left:0;width:100%;height:3px}
+.ben-trim::after{background:var(--blue)}.ben-sem::after{background:var(--green)}.ben-anu::after{background:var(--navy)}
+.ben-period{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block}
+.ben-title{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;color:var(--navy);margin-bottom:6px}
+.ben-price{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:12px}
+.ben-list{list-style:none;display:flex;flex-direction:column;gap:5px}
+.ben-list li{font-size:11px;color:var(--muted);padding-left:14px;position:relative;line-height:1.4}
+.ben-list li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:700}
+.versus-strip{background:var(--navy);border-radius:10px;padding:20px 24px;margin-bottom:20px;display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center}
+.vs-side{padding:12px;background:rgba(255,255,255,.06);border-radius:8px}
+.vs-side label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:700;display:block;margin-bottom:5px}
+.vs-side .vsv{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;line-height:1}
+.vs-side small{font-size:10px;color:rgba(255,255,255,.4);display:block;margin-top:3px}
+.vs-mid{text-align:center;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:rgba(255,255,255,.3);letter-spacing:2px}
+/* IMPACT BANNER */
+.impact{background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 100%);border-radius:12px;padding:28px;text-align:center;margin-bottom:20px}
+.impact .it{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:700;margin-bottom:8px}
+.impact .iv{font-family:'Montserrat',sans-serif;font-size:clamp(34px,5vw,62px);font-weight:900;color:white;line-height:1}
+.impact .iv em{font-style:normal;color:#86efac}
+.impact p{font-size:12px;color:rgba(255,255,255,.55);margin-top:10px;max-width:460px;margin-left:auto;margin-right:auto}
+
+footer{background:var(--navy);padding:28px 40px;display:flex;justify-content:space-between;align-items:center}
+footer .fb{font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:white;letter-spacing:3px}
+footer .fb em{font-style:normal;color:#5b8bff;font-weight:400}
+footer p{font-size:10px;color:rgba(255,255,255,.3);text-align:right;line-height:1.7}
+
+@media(max-width:900px){
+  .topbar{padding:0 16px}.topbar-nav{display:none}
+  section{padding:40px 16px}.premissas,.kpi-strip{grid-template-columns:1fr}
+  .g2,.g3,.g4,.sc-g,.sim-body,.res-g{grid-template-columns:1fr}
+  footer{flex-direction:column;gap:12px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-brand">EXTAT<em> GROUP</em></div>
+  <nav class="topbar-nav">
+    <a href="#premissa">Premissas</a>
+    <a href="#atuais">Planos Atuais</a>
+    <a href="#novos">Novos Preços</a>
+    <a href="#fidelidade">Fidelidade</a>
+    <a href="#sim">Simulador</a>
+    <a href="#dfc">DFC Projetada</a>
+    <a href="#impacto">Impacto</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="chip"><i></i>Precificação — RD Performance</div>
+  <h1>TABELA DE PREÇOS<br><em>& DFC PROJETADA</em></h1>
+  <p class="hero-sub">Custo real por plano · Markup · Margem esperada · Studio 1:3 com estagiário · Coletivas 1:15 · Simulação de receita com novos preços.</p>
+</div>
+
+<!-- PREMISSAS -->
+<div class="premissas" id="premissa">
+  <div class="pre-card">
+    <span class="pre-tag">Studio de Musculação</span>
+    <div class="pre-val">R$ 12,50 / aluno/h</div>
+    <div class="pre-desc">
+      1 professor (R$25/h) + 1 estagiário (R$12,50/h) para 3 alunos simultâneos<br>
+      <strong style="color:var(--navy)">(R$25 + R$12,50) ÷ 3 = R$12,50/aluno/h</strong><br>
+      5,5 visitas médias/mês → <strong>R$68,75/aluno/mês</strong>
+    </div>
+  </div>
+  <div class="pre-card">
+    <span class="pre-tag">Aulas Coletivas</span>
+    <div class="pre-val">R$ 4,33 / aluno/aula</div>
+    <div class="pre-desc">
+      1 professor (R$65/h média) para 15 alunos · capacidade máx. 20<br>
+      <strong style="color:var(--navy)">R$65 ÷ 15 = R$4,33/aluno/h</strong><br>
+      8 aulas/mês × 50min → <strong>R$28,89/aluno/mês</strong>
+    </div>
+  </div>
+  <div class="pre-card">
+    <span class="pre-tag">Custos Fixos Rateados</span>
+    <div class="pre-val">R$ 162,91 / aluno</div>
+    <div class="pre-desc">
+      Manutenção + Administrativo + Desp. Financeiras ÷ 303 alunos<br>
+      Custo fixo independe do plano escolhido<br>
+      <strong style="color:var(--navy)">Piso mínimo de qualquer plano</strong>
+    </div>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-strip">
+  <div class="kpi"><label>CV Studio / aluno / mês</label><div class="kv bl">R$ 68,75</div><small>(R$25+R$12,50) ÷ 3 × 5,5 vis.</small></div>
+  <div class="kpi"><label>CV Coletivas / aluno / mês</label><div class="kv bl">R$ 28,89</div><small>R$65 ÷ 15 × 8 aulas × 50min</small></div>
+  <div class="kpi"><label>CF Rateado / aluno</label><div class="kv nv">R$ 162,91</div><small>Custos fixos ÷ 303 alunos</small></div>
+  <div class="kpi"><label>Custo Direto Mínimo</label><div class="kv am">R$ 231,66</div><small>Essencial sem coletivas</small></div>
+  <div class="kpi"><label>Markup Mínimo (35% marg.)</label><div class="kv gn">1,87×</div><small>Fator de precificação base</small></div>
+</div>
+
+<!-- ══ PLANOS ATUAIS ══ -->
+<section id="atuais">
+  <div class="stag"><span class="d"></span>Diagnóstico Atual</div>
+  <div class="stitle">Planos Atuais — <em>Custo Real</em></div>
+  <p class="sdesc">Análise dos planos vigentes com o custo correto de entrega: studio na relação 1:3 professor/aluno com estagiário, coletivas na relação 1:15. Margem calculada sobre o preço de venda após impostos e taxas.</p>
+
+  <div class="tbl-wrap">
+    <table class="ptbl">
+      <thead>
+        <tr>
+          <th style="text-align:left">Plano</th>
+          <th>Preço/Mês</th>
+          <th>CV Studio<br><span style="opacity:.6;font-size:8px">1:3 c/ estag.</span></th>
+          <th>CV Coletivas<br><span style="opacity:.6;font-size:8px">1:15 · 8 aulas</span></th>
+          <th>CV Personal</th>
+          <th>CF Rateado</th>
+          <th>Impostos<br><span style="opacity:.6;font-size:8px">6%</span></th>
+          <th>Taxas<br><span style="opacity:.6;font-size:8px">5,5%</span></th>
+          <th>Custo Total</th>
+          <th>Margem R$</th>
+          <th>Margem %</th>
+          <th>Markup</th>
+          <th style="text-align:center">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="grp"><td colspan="13">Planos Anuais</td></tr>
+        <tr>
+          <td>Anual ALL INCLUSIVE<span class="sub">Musculação + Coletivas + Personal grupo (até 3)</span></td>
+          <td class="ca">R$ 597,00</td>
+          <td class="cl">R$ 68,75</td><td class="cl">R$ 28,89</td><td class="cl">R$ 36,11</td><td class="cl">R$ 162,91</td>
+          <td class="cl">R$ 35,82</td><td class="cl">R$ 32,84</td>
+          <td class="ca">R$ 365,31</td>
+          <td class="ca">R$ 231,69</td><td class="ca">38,8%</td><td class="ca">2,01×</td>
+          <td style="text-align:center"><span class="badge b-am">Atenção</span></td>
+        </tr>
+        <tr>
+          <td>Anual Executivo<span class="sub">Musculação 12h–16h + Coletivas</span></td>
+          <td>R$ 480,00</td>
+          <td class="cl">R$ 48,12</td><td class="cl">R$ 28,89</td><td class="cl">R$ 0,00</td><td class="cl">R$ 162,91</td>
+          <td class="cl">R$ 28,80</td><td class="cl">R$ 26,40</td>
+          <td>R$ 295,12</td>
+          <td class="ca">R$ 184,88</td><td class="ca">38,5%</td><td class="ca">2,00×</td>
+          <td style="text-align:center"><span class="badge b-am">Atenção</span></td>
+        </tr>
+        <tr class="grp"><td colspan="13">Planos Mensais e Outros</td></tr>
+        <tr>
+          <td>Semestral<span class="sub">Musculação + Coletivas + Personal grupo (até 3)</span></td>
+          <td>R$ 730,00</td>
+          <td class="cl">R$ 68,75</td><td class="cl">R$ 28,89</td><td class="cl">R$ 36,11</td><td class="cl">R$ 162,91</td>
+          <td class="cl">R$ 43,80</td><td class="cl">R$ 40,15</td>
+          <td>R$ 380,61</td>
+          <td class="cg">R$ 349,39</td><td class="cg">47,9%</td><td class="cg">2,46×</td>
+          <td style="text-align:center"><span class="badge b-gn">OK</span></td>
+        </tr>
+        <tr>
+          <td>Mensal<span class="sub">Musculação + Treino orientado pelos personais</span></td>
+          <td class="cg">R$ 920,00</td>
+          <td class="cl">R$ 68,75</td><td class="cl">R$ 0,00</td><td class="cl">R$ 0,00</td><td class="cl">R$ 162,91</td>
+          <td class="cl">R$ 55,20</td><td class="cl">R$ 50,60</td>
+          <td class="cg">R$ 337,46</td>
+          <td class="cg">R$ 582,54</td><td class="cg">63,3%</td><td class="cg">3,97×</td>
+          <td style="text-align:center"><span class="badge b-gn">Excelente</span></td>
+        </tr>
+        <tr>
+          <td>Executivo Mensal<span class="sub">Musculação 12h–16h + Coletivas</span></td>
+          <td>R$ 639,00</td>
+          <td class="cl">R$ 48,12</td><td class="cl">R$ 28,89</td><td class="cl">R$ 0,00</td><td class="cl">R$ 162,91</td>
+          <td class="cl">R$ 38,34</td><td class="cl">R$ 35,15</td>
+          <td>R$ 313,41</td>
+          <td class="cb">R$ 325,59</td><td class="cb">51,0%</td><td class="cb">2,66×</td>
+          <td style="text-align:center"><span class="badge b-bl">OK</span></td>
+        </tr>
+        <tr>
+          <td>Diária<span class="sub">Acesso avulso — CF proporcional (1 visita)</span></td>
+          <td class="cr">R$ 85,00</td>
+          <td class="cl">R$ 12,50</td><td class="cl">R$ 0,00</td><td class="cl">R$ 0,00</td>
+          <td class="cl" style="font-size:10px">R$ 7,40 <span style="color:var(--light)">(prop.)</span></td>
+          <td class="cl">R$ 5,10</td><td class="cl">R$ 4,67</td>
+          <td class="cr">R$ 29,67</td>
+          <td class="cg">R$ 55,33</td><td class="cg">65,1%</td><td class="cl" style="font-size:10px">2,97×</td>
+          <td style="text-align:center"><span class="badge b-am">Ver nota</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="g2">
+    <div class="card warn">
+      <strong style="color:var(--amber);font-size:11px;text-transform:uppercase;letter-spacing:1px">⚠ Anual ALL INCLUSIVE — 38,8% de margem</strong>
+      <p style="font-size:12px;color:var(--muted);margin-top:7px;line-height:1.6">Com o custo real de coletivas (1:15) e studio (1:3 + estagiário), a margem do plano mais vendido melhorou em relação ao modelo anterior — mas <strong style="color:var(--text)">ainda não está no patamar desejado de 45–55%</strong>. O preço precisa ser reposicionado para o plano PRO a R$890.</p>
+    </div>
+    <div class="card warn">
+      <strong style="color:var(--amber);font-size:11px;text-transform:uppercase;letter-spacing:1px">⚠ Diária a R$85 — Custo fixo não coberto</strong>
+      <p style="font-size:12px;color:var(--muted);margin-top:7px;line-height:1.6">O custo direto por visita (R$12,50) é baixo, mas a diária não contribui com os custos fixos mensais da operação. A R$85 o aluno paga menos que qualquer plano proporcionalizado. <strong style="color:var(--text)">Novo preço sugerido: R$120–150 (Trial Day).</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ NOVOS PLANOS ══ -->
+<section id="novos">
+  <div class="stag"><span class="d"></span>Nova Tabela de Preços</div>
+  <div class="stitle">Preços Sugeridos com <em>Margem 45–55%</em></div>
+  <p class="sdesc">Com os custos reais mais baixos (coletivas 1:15 vs 1:3 anterior), os preços calculados caem. Os preços comerciais foram ajustados para refletir posicionamento premium e garantir margens acima de 40% em todos os planos.</p>
+
+  <div class="ss">
+    <div class="ss-l">
+      <label>Plano estratégico — Deve ser o mais vendido</label>
+      <h3>⭐ PLANO PRO a R$ 890/mês</h3>
+      <p>Melhor equilíbrio: inclui musculação (1:3) + coletivas (1:15) + personal grupo. Custo real de R$296,66 garante 55,2% de margem a R$890. Deve representar 38–45% da carteira.</p>
+    </div>
+    <div class="ss-r">
+      <div class="ss-s"><div class="sv">55,2%</div><div class="sl">Margem PRO</div></div>
+      <div class="ss-s"><div class="sv">3,00×</div><div class="sl">Markup</div></div>
+      <div class="ss-s"><div class="sv">R$491</div><div class="sl">Lucro/aluno</div></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="ptbl">
+      <thead>
+        <tr>
+          <th style="text-align:left">Novo Plano</th>
+          <th>Preço<br><span style="opacity:.6;font-size:8px">Calculado</span></th>
+          <th>Preço<br><span style="opacity:.6;font-size:8px">Comercial</span></th>
+          <th>CV Studio<br><span style="opacity:.6;font-size:8px">1:3 c/ estag.</span></th>
+          <th>CV Coletivas<br><span style="opacity:.6;font-size:8px">1:15</span></th>
+          <th>CV Personal</th>
+          <th>CF Rateado</th>
+          <th>Custo Total</th>
+          <th>Margem R$</th>
+          <th>Margem %</th>
+          <th>Markup</th>
+          <th>Mix Ideal</th>
+          <th style="text-align:center">Posição</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="grp"><td colspan="13">Studio de Treinamento</td></tr>
+        <tr>
+          <td>ESSENCIAL<span class="sub">Musculação livre · Treino orientado · Avaliação semestral</span></td>
+          <td class="cl">R$ 433</td><td class="cn" style="font-weight:700">R$ 680,00</td>
+          <td class="cl">R$ 68,75</td><td class="cl">R$ 0,00</td><td class="cl">R$ 0,00</td><td class="cl">R$ 162,91</td>
+          <td>R$ 309,86</td>
+          <td class="cg">R$ 370,14</td><td class="cg">54,4%</td><td class="cg">2,94×</td>
+          <td>25%</td>
+          <td style="text-align:center"><span class="badge b-bl">Entrada</span></td>
+        </tr>
+        <tr class="feat">
+          <td>PRO <span style="color:var(--blue)">★</span><span class="sub">Musculação + Coletivas ilimitadas + Personal grupo (até 3)</span></td>
+          <td class="cl">R$ 555</td><td class="cb" style="font-weight:700;font-size:13px">R$ 890,00</td>
+          <td class="cl">R$ 68,75</td><td class="cl">R$ 28,89</td><td class="cl">R$ 36,11</td><td class="cl">R$ 162,91</td>
+          <td>R$ 399,01</td>
+          <td class="cg">R$ 490,99</td><td class="cg">55,2%</td><td class="cg">3,00×</td>
+          <td style="font-weight:700;color:var(--blue)">38–45%</td>
+          <td style="text-align:center"><span class="badge b-st">⭐ Principal</span></td>
+        </tr>
+        <tr>
+          <td>ELITE<span class="sub">Musculação + Coletivas + 4 sessões personal individual/mês</span></td>
+          <td class="cl">R$ 892</td><td class="cn" style="font-weight:700">R$ 1.490,00</td>
+          <td class="cl">R$ 68,75</td><td class="cl">R$ 28,89</td><td class="cl">R$ 216,67</td><td class="cl">R$ 162,91</td>
+          <td>R$ 648,57</td>
+          <td class="cg">R$ 841,43</td><td class="cg">56,5%</td><td class="cg">3,12×</td>
+          <td>10%</td>
+          <td style="text-align:center"><span class="badge b-nv">Premium</span></td>
+        </tr>
+        <tr>
+          <td>OFF-PEAK<span class="sub">Musculação 12h–16h · Horário restrito</span></td>
+          <td class="cl">R$ 394</td><td style="font-weight:700">R$ 490,00</td>
+          <td class="cl">R$ 48,12</td><td class="cl">R$ 0,00</td><td class="cl">R$ 0,00</td><td class="cl">R$ 162,91</td>
+          <td>R$ 267,38</td>
+          <td class="cg">R$ 222,62</td><td class="cg">45,4%</td><td class="cg">2,32×</td>
+          <td>12%</td>
+          <td style="text-align:center"><span class="badge b-am">Flex</span></td>
+        </tr>
+        <tr class="grp"><td colspan="13">Novo Produto — Aulas Coletivas</td></tr>
+        <tr>
+          <td>COLETIVAS RD<span class="sub">Coletivas ilimitadas · Sem acesso à musculação principal</span></td>
+          <td class="cl">R$ 397</td><td style="color:var(--teal);font-weight:700">R$ 450,00</td>
+          <td class="cl">R$ 20,63</td><td class="cl">R$ 28,89</td><td class="cl">R$ 0,00</td><td class="cl">R$ 162,91</td>
+          <td>R$ 264,18</td>
+          <td style="color:var(--teal)">R$ 185,82</td><td style="color:var(--teal)">41,3%</td><td style="color:var(--teal)">2,12×</td>
+          <td>13%</td>
+          <td style="text-align:center"><span class="badge b-tl">Estratégico</span></td>
+        </tr>
+        <tr class="grp"><td colspan="13">Serviços Avulsos</td></tr>
+        <tr>
+          <td>TRIAL DAY<span class="sub">1 dia de acesso completo — funil de conversão</span></td>
+          <td class="cl">—</td><td style="font-weight:700">R$ 120,00</td>
+          <td class="cl">R$ 12,50</td><td class="cl">—</td><td class="cl">—</td>
+          <td class="cl" style="font-size:10px">R$ 7,40</td>
+          <td>R$ 29,67</td>
+          <td class="cg">R$ 90,33</td><td class="cg">75,3%</td><td class="cg">6,09×</td>
+          <td>—</td>
+          <td style="text-align:center"><span class="badge b-gn">Funil</span></td>
+        </tr>
+        <tr>
+          <td>PERSONAL AVULSO<span class="sub">Pacote 8 sessões individuais</span></td>
+          <td class="cl">—</td><td style="font-weight:700">R$ 960,00</td>
+          <td class="cl">—</td><td class="cl">—</td><td class="cl">R$ 433,33</td><td class="cl">R$ 162,91</td>
+          <td>R$ 653,64</td>
+          <td class="cg">R$ 306,36</td><td class="cg">31,9%</td><td class="cg">1,60×</td>
+          <td>—</td>
+          <td style="text-align:center"><span class="badge b-nv">Add-on</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="g2">
+    <div class="card ok">
+      <strong style="color:var(--green);font-size:11px;text-transform:uppercase;letter-spacing:1px">✅ Coletivas RD — Margem real de 41,3%</strong>
+      <p style="font-size:12px;color:var(--muted);margin-top:7px;line-height:1.6">Com a relação 1:15 correta para coletivas, o custo variável é de apenas R$28,89/aluno/mês. A R$450, o plano Coletivas RD tem uma <strong style="color:var(--text)">margem de 41,3% — superior à do Anual ALL INCLUSIVE atual</strong>. Viável e estratégico para converter usuários Wellhub.</p>
+    </div>
+    <div class="card info">
+      <strong style="color:var(--blue);font-size:11px;text-transform:uppercase;letter-spacing:1px">💡 Por que o PRO a R$890 é o plano ideal?</strong>
+      <p style="font-size:12px;color:var(--muted);margin-top:7px;line-height:1.6">O custo direto real do PRO é de R$296,66 — preço mínimo calculado seria R$555. A R$890 (preço comercial) a margem chega a 55,2%, com markup de 3×. É o plano que <strong style="color:var(--text)">justifica o posicionamento boutique e viabiliza a operação.</strong></p>
+    </div>
+  </div>
+</section>
+
+</section>
+
+<!-- ══ FIDELIDADE ══ -->
+<section id="fidelidade">
+  <div class="stag"><span class="d"></span>Estratégia de Fidelidade</div>
+  <div class="stitle">Benefícios ou <em>Descontos</em>?</div>
+  <p class="sdesc">Para pacotes trimestrais, semestrais e anuais, a RD Performance pode recompensar a fidelidade de duas formas: concedendo descontos diretos no mensalidade — ou entregando mais valor sem reduzir o preço. A análise mostra que a segunda estratégia é significativamente mais rentável.</p>
+
+  <!-- VERSUS STRIP -->
+  <div class="versus-strip">
+    <div class="vs-side">
+      <label>Estratégia A — Desconto Direto</label>
+      <div class="vsv" style="color:#f87171">R$ 8.544</div>
+      <small>Receita anual por aluno PRO com –20%</small>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:8px">Aluno paga menos, empresa recebe menos. Margem cai de 55% para 47%. Desconto vira expectativa permanente.</div>
+    </div>
+    <div class="vs-mid">VS</div>
+    <div class="vs-side">
+      <label>Estratégia B — Benefícios Sem Desconto ⭐ Recomendada</label>
+      <div class="vsv" style="color:#86efac">R$ 10.290</div>
+      <small>Receita anual por aluno PRO sem desconto (–R$390 custo de benefícios)</small>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:8px">Mesmo preço, mais valor percebido. Margem permanece acima de 51%. Aluno sente que ganha mais.</div>
+    </div>
+  </div>
+
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px 18px;margin-bottom:22px;font-size:13px;color:var(--text)">
+    <strong style="color:var(--green)">💡 Impacto da escolha com 147 alunos:</strong> a diferença entre as duas estratégias é de <strong>R$1.746/aluno/ano</strong> para o PRO. Com toda a base migrada: <strong>+R$256.662/ano</strong> a favor da estratégia de benefícios.
+  </div>
+
+  <!-- TAB TOGGLE -->
+  <div class="fidtabs">
+    <button class="fidtab on" onclick="showFid(this,'fid-ben')">⭐ Benefícios (Recomendado)</button>
+    <button class="fidtab" onclick="showFid(this,'fid-desc')">Descontos Diretos</button>
+    <button class="fidtab" onclick="showFid(this,'fid-comp')">Comparativo</button>
+  </div>
+
+  <!-- PAINEL BENEFÍCIOS -->
+  <div id="fid-ben" class="fidpanel on">
+    <p class="sdesc" style="margin-bottom:16px">Preço mensal <strong>sem desconto</strong> em qualquer período. O aluno recebe serviços e experiências adicionais que custam menos para a academia do que um desconto equivalente.</p>
+
+    <div class="benefit-box">
+      <div class="ben-card ben-trim">
+        <span class="ben-period">Trimestral — 3 meses</span>
+        <div class="ben-title">Comprometimento</div>
+        <div class="ben-price">Preço cheio · Custo benefício: R$65/trimestre</div>
+        <ul class="ben-list">
+          <li>Avaliação física <strong>bimestral</strong> (vs. semestral no mensal)</li>
+          <li><strong>1 sessão de personal avulso</strong> inclusa no trimestre</li>
+          <li>Priority booking nos horários mais disputados</li>
+          <li>Acesso antecipado a novas modalidades</li>
+        </ul>
+        <div style="margin-top:12px;padding:8px;background:var(--ice);border-radius:6px;font-size:10px;color:var(--blue);font-weight:600">Custo real: R$21,67/mês · Margem PRO: 52,7%</div>
+      </div>
+      <div class="ben-card ben-sem">
+        <span class="ben-period">Semestral — 6 meses</span>
+        <div class="ben-title">Engajamento</div>
+        <div class="ben-price">Preço cheio · Custo benefício: R$195/semestre</div>
+        <ul class="ben-list">
+          <li>Todos os benefícios do trimestral</li>
+          <li><strong>3 sessões de personal avulso</strong> (1 por bimestre)</li>
+          <li><strong>1 avaliação nutricional básica</strong> com profissional</li>
+          <li>Acesso a eventos e aulões especiais</li>
+          <li>Check-in de progresso mensal com professor</li>
+        </ul>
+        <div style="margin-top:12px;padding:8px;background:#f0fdf4;border-radius:6px;font-size:10px;color:var(--green);font-weight:600">Custo real: R$32,50/mês · Margem PRO: 51,5%</div>
+      </div>
+      <div class="ben-card ben-anu">
+        <span class="ben-period">Anual — 12 meses</span>
+        <div class="ben-title">Parceria Total</div>
+        <div class="ben-price">Preço cheio · Custo benefício: R$390/ano</div>
+        <ul class="ben-list">
+          <li>Todos os benefícios do semestral</li>
+          <li><strong>6 sessões de personal avulso</strong> (1 por bimestre)</li>
+          <li><strong>2 avaliações nutricionais</strong> no ano</li>
+          <li><strong>Freeze de até 30 dias</strong> sem custo</li>
+          <li><strong>Kit welcome exclusivo</strong> RD Performance</li>
+          <li>Indicação: <strong>1 mês grátis para o indicado</strong></li>
+        </ul>
+        <div style="margin-top:12px;padding:8px;background:var(--ice);border-radius:6px;font-size:10px;color:var(--navy);font-weight:600">Custo real: R$32,50/mês · Margem PRO: 51,5%</div>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto;border:1px solid var(--gray);border-radius:10px">
+      <table class="fid-tbl">
+        <thead>
+          <tr>
+            <th style="text-align:left">Plano</th>
+            <th>Mensal<br><span style="opacity:.6;font-size:8px">preço base</span></th>
+            <th>Trim. (3m)<br><span style="opacity:.6;font-size:8px">mesmo preço</span></th>
+            <th>Mg% trim.</th>
+            <th>Sem. (6m)<br><span style="opacity:.6;font-size:8px">mesmo preço</span></th>
+            <th>Mg% sem.</th>
+            <th>Anual (12m)<br><span style="opacity:.6;font-size:8px">mesmo preço</span></th>
+            <th>Mg% anu.</th>
+            <th>Receita/ano<br><span style="opacity:.6;font-size:8px">c/ benefícios</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="fgrp"><td colspan="9">Studio — Benefícios Sem Desconto</td></tr>
+          <tr><td>ESSENCIAL<span style="display:block;font-size:10px;color:var(--light);font-family:Inter,sans-serif;font-weight:400">+aval bimestral · 1 personal · priority</span></td>
+            <td class="cb">R$680</td><td>R$680</td><td class="cg">51,2%</td><td>R$680</td><td class="cg">49,7%</td><td>R$680</td><td class="cg">49,7%</td><td class="cg">R$7.770</td></tr>
+          <tr class="feat"><td>PRO ⭐<span style="display:block;font-size:10px;color:var(--light);font-family:Inter,sans-serif;font-weight:400">+personal · avaliação nutri · eventos · freeze</span></td>
+            <td class="cb" style="font-weight:700">R$890</td><td class="cb">R$890</td><td class="cg">52,7%</td><td class="cb">R$890</td><td class="cg">51,5%</td><td class="cb">R$890</td><td class="cg">51,5%</td><td class="cg" style="font-weight:700">R$10.290</td></tr>
+          <tr><td>ELITE<span style="display:block;font-size:10px;color:var(--light);font-family:Inter,sans-serif;font-weight:400">+personal extra · nutrição · eventos VIP</span></td>
+            <td class="cb">R$1.490</td><td>R$1.490</td><td class="cg">55,0%</td><td>R$1.490</td><td class="cg">54,3%</td><td>R$1.490</td><td class="cg">54,3%</td><td class="cg">R$17.490</td></tr>
+          <tr><td>OFF-PEAK<span style="display:block;font-size:10px;color:var(--light);font-family:Inter,sans-serif;font-weight:400">+aval bimestral · 1 personal · priority</span></td>
+            <td>R$490</td><td>R$490</td><td class="ca">41,0%</td><td>R$490</td><td class="ca">38,8%</td><td>R$490</td><td class="ca">38,8%</td><td>R$5.490</td></tr>
+          <tr class="fgrp"><td colspan="9">Coletivas</td></tr>
+          <tr><td>COLETIVAS RD<span style="display:block;font-size:10px;color:var(--light);font-family:Inter,sans-serif;font-weight:400">+1 trial studio · priority · eventos</span></td>
+            <td>R$450</td><td>R$450</td><td class="ca">36,5%</td><td>R$450</td><td class="ca">34,1%</td><td>R$450</td><td class="ca">34,1%</td><td>R$5.010</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PAINEL DESCONTOS -->
+  <div id="fid-desc" class="fidpanel">
+    <p class="sdesc" style="margin-bottom:16px">Alternativa tradicional: reduzir o preço mensalidade conforme o período de comprometimento. Simples de comunicar, mas corrói margem e cria expectativa de desconto permanente.</p>
+
+    <div style="overflow-x:auto;border:1px solid var(--gray);border-radius:10px;margin-bottom:16px">
+      <table class="fid-tbl">
+        <thead>
+          <tr>
+            <th style="text-align:left">Plano</th>
+            <th>Mensal<br><span style="opacity:.6;font-size:8px">sem fidelidade</span></th>
+            <th>Mg%</th>
+            <th>Trim. –5%<br><span style="opacity:.6;font-size:8px">3 meses</span></th>
+            <th>Mg%</th>
+            <th>Sem. –15%<br><span style="opacity:.6;font-size:8px">6 meses</span></th>
+            <th>Mg%</th>
+            <th>Anual –20%<br><span style="opacity:.6;font-size:8px">12 meses</span></th>
+            <th>Mg%</th>
+            <th>Rec./ano<br><span style="opacity:.6;font-size:8px">–20% anual</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="fgrp"><td colspan="10">Studio — Com Desconto por Período</td></tr>
+          <tr><td>ESSENCIAL</td>
+            <td>R$680</td><td class="cg">54,4%</td>
+            <td>R$646</td><td class="cg">52,6%</td>
+            <td>R$578</td><td class="ca">48,4%</td>
+            <td class="cr">R$544</td><td class="cr">45,9%</td>
+            <td class="cr">R$6.528</td></tr>
+          <tr class="feat"><td>PRO ⭐</td>
+            <td class="cb" style="font-weight:700">R$890</td><td class="cg">55,2%</td>
+            <td>R$846</td><td class="cg">53,4%</td>
+            <td>R$757</td><td class="ca">49,3%</td>
+            <td class="cr">R$712</td><td class="cr">46,8%</td>
+            <td class="cr" style="font-weight:700">R$8.544</td></tr>
+          <tr><td>ELITE</td>
+            <td>R$1.490</td><td class="cg">56,5%</td>
+            <td>R$1.416</td><td class="cg">54,8%</td>
+            <td>R$1.267</td><td class="cg">50,8%</td>
+            <td class="cr">R$1.192</td><td class="ca">48,5%</td>
+            <td class="cr">R$14.304</td></tr>
+          <tr><td>OFF-PEAK</td>
+            <td>R$490</td><td class="cg">45,4%</td>
+            <td>R$466</td><td class="ca">43,2%</td>
+            <td>R$417</td><td class="ca">37,8%</td>
+            <td class="cr">R$392</td><td class="cr">34,7%</td>
+            <td class="cr">R$4.704</td></tr>
+          <tr class="fgrp"><td colspan="10">Coletivas</td></tr>
+          <tr><td>COLETIVAS RD</td>
+            <td>R$450</td><td class="ca">41,3%</td>
+            <td>R$428</td><td class="ca">38,9%</td>
+            <td>R$383</td><td class="ca">32,9%</td>
+            <td class="cr">R$360</td><td class="cr">29,5%</td>
+            <td class="cr">R$4.320</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="g2">
+      <div class="card danger">
+        <strong style="color:var(--red);font-size:11px;text-transform:uppercase;letter-spacing:1px">⚠ Risco dos Descontos Diretos</strong>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:10px">
+          <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--red)">→</span>Aluno OFF-PEAK anual a R$392 fica com margem de apenas 34,7% — abaixo da meta de 35%</li>
+          <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--red)">→</span>Coletivas RD anual a R$360 cai para 29,5% de margem — potencialmente deficitária</li>
+          <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--red)">→</span>O aluno desconta o desconto na renovação — espera o mesmo benefício todo ano</li>
+          <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--red)">→</span>Erosão de R$256.662/ano vs. estratégia de benefícios (147 alunos)</li>
+        </ul>
+      </div>
+      <div class="card ok">
+        <strong style="color:var(--green);font-size:11px;text-transform:uppercase;letter-spacing:1px">✅ Quando usar desconto mesmo assim</strong>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:10px">
+          <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--green)">→</span>Campanha de relançamento para migrar base atual</li>
+          <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--green)">→</span>Aluno estratégico (influenciador, referência de comunidade)</li>
+          <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--green)">→</span>Limite máximo de 10% — somente PRO ou ELITE</li>
+          <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--green)">→</span>Aprovação obrigatória do sócio gestor</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAINEL COMPARATIVO -->
+  <div id="fid-comp" class="fidpanel">
+    <p class="sdesc" style="margin-bottom:16px">Comparativo direto entre as duas estratégias para o Plano PRO — o mais importante da carteira. Os números mostram porque a estratégia de benefícios é financeiramente superior.</p>
+
+    <div style="overflow-x:auto;border:1px solid var(--gray);border-radius:10px;margin-bottom:16px">
+      <table class="fid-tbl">
+        <thead>
+          <tr>
+            <th style="text-align:left">Modalidade</th>
+            <th>Preço/mês</th>
+            <th>Receita 12m</th>
+            <th>Custo extra/mês</th>
+            <th>Margem líquida</th>
+            <th>Mg% líquida</th>
+            <th style="text-align:center">Resultado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="fgrp"><td colspan="7">Plano PRO — Comparativo Anual</td></tr>
+          <tr>
+            <td>Mensal livre (sem fidelidade)</td>
+            <td class="cb">R$890</td><td>R$10.680</td><td class="cl">R$0</td>
+            <td class="cg">R$490,99</td><td class="cg">55,2%</td>
+            <td style="text-align:center"><span class="badge-sm bs-bl">Referência</span></td>
+          </tr>
+          <tr>
+            <td>Trimestral — Desconto –5%</td>
+            <td>R$846</td><td>R$10.152</td><td class="cl">R$0</td>
+            <td class="cg">R$456,49</td><td class="cg">53,4%</td>
+            <td style="text-align:center"><span class="badge-sm bs-gn">OK</span></td>
+          </tr>
+          <tr>
+            <td>Trimestral — Benefícios ⭐</td>
+            <td class="cg">R$890</td><td class="cg">R$10.680</td><td>R$21,67</td>
+            <td class="cg">R$469,32</td><td class="cg">52,7%</td>
+            <td style="text-align:center"><span class="badge-sm bs-nv">Melhor</span></td>
+          </tr>
+          <tr>
+            <td>Semestral — Desconto –15%</td>
+            <td class="ca">R$757</td><td class="ca">R$9.072</td><td class="cl">R$0</td>
+            <td class="ca">R$368,09</td><td class="ca">49,3%</td>
+            <td style="text-align:center"><span class="badge-sm bs-am">Atenção</span></td>
+          </tr>
+          <tr>
+            <td>Semestral — Benefícios ⭐</td>
+            <td class="cg">R$890</td><td class="cg">R$10.680</td><td>R$32,50</td>
+            <td class="cg">R$458,49</td><td class="cg">51,5%</td>
+            <td style="text-align:center"><span class="badge-sm bs-nv">Melhor</span></td>
+          </tr>
+          <tr>
+            <td>Anual — Desconto –20%</td>
+            <td class="cr">R$712</td><td class="cr">R$8.544</td><td class="cl">R$0</td>
+            <td class="cr">R$333,46</td><td class="cr">46,8%</td>
+            <td style="text-align:center"><span class="badge-sm bs-am">Evitar</span></td>
+          </tr>
+          <tr class="feat">
+            <td><strong>Anual — Benefícios ⭐ Recomendado</strong></td>
+            <td class="cg" style="font-weight:700">R$890</td><td class="cg" style="font-weight:700">R$10.680</td><td>R$32,50</td>
+            <td class="cg" style="font-weight:700">R$458,49</td><td class="cg" style="font-weight:700">51,5%</td>
+            <td style="text-align:center"><span class="badge-sm bs-nv">Ideal</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--navy);border-radius:10px;padding:20px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center">
+      <div>
+        <div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Ganho anual por aluno PRO</div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:30px;font-weight:900;color:#86efac">+R$1.746</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">Benefício vs. desconto –20%</div>
+      </div>
+      <div>
+        <div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Com 85 alunos PRO</div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:30px;font-weight:900;color:#86efac">+R$148.410</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">Diferença anual</div>
+      </div>
+      <div>
+        <div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Com 147 alunos (base total)</div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:30px;font-weight:900;color:#86efac">+R$256.662</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">Ganho anual escolhendo benefícios</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SIMULADOR ══ -->
+<section id="sim">
+  <div class="stag"><span class="d"></span>Simulador</div>
+  <div class="stitle"><em>Simule</em> o Mix de Alunos</div>
+  <p class="sdesc">Ajuste a quantidade de alunos em cada plano. Todos os cálculos usam os custos reais: studio R$68,75, coletivas R$28,89, CF rateado R$162,91.</p>
+
+  <div class="sim">
+    <div class="sim-head">
+      <h3>Simulador — Novos Planos RD Performance</h3>
+      <button class="sim-reset" onclick="resetSim()">↺ Restaurar</button>
+    </div>
+    <div class="sim-body">
+      <div class="sim-l">
+        <div class="sim-st">Distribuição de Alunos</div>
+        <div class="slg"><label>Essencial (R$680) <span class="sv" id="v-ess">76</span> alunos</label><input type="range" id="s-ess" min="0" max="200" value="76" step="1" oninput="updateSim()"><div class="hint">Musculação · Margem 54,4%</div></div>
+        <div class="slg"><label>PRO ⭐ (R$890) <span class="sv" id="v-pro">105</span> alunos</label><input type="range" id="s-pro" min="0" max="300" value="105" step="1" oninput="updateSim()"><div class="hint">Musc. + Coletivas + Personal · Margem 55,2% · PRINCIPAL</div></div>
+        <div class="slg"><label>Elite (R$1.490) <span class="sv" id="v-eli">19</span> alunos</label><input type="range" id="s-eli" min="0" max="100" value="19" step="1" oninput="updateSim()"><div class="hint">Premium · Margem 56,5%</div></div>
+        <div class="slg"><label>Off-Peak (R$490) <span class="sv" id="v-off">35</span> alunos</label><input type="range" id="s-off" min="0" max="100" value="35" step="1" oninput="updateSim()"><div class="hint">Horário restrito · Margem 45,4%</div></div>
+        <div class="slg"><label>Coletivas RD (R$450) <span class="sv" id="v-col">38</span> alunos</label><input type="range" id="s-col" min="0" max="100" value="38" step="1" oninput="updateSim()"><div class="hint">Só coletivas · Margem 41,3%</div></div>
+        <div class="slg"><label>Trial Day / mês <span class="sv" id="v-dia">41</span></label><input type="range" id="s-dia" min="0" max="200" value="41" step="1" oninput="updateSim()"><div class="hint">R$120 · Funil de conversão</div></div>
+      </div>
+      <div class="sim-r">
+        <div class="sim-st">Resultado Simulado</div>
+        <div class="res-g" id="res-cards"></div>
+        <div id="res-bk"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ DFC PROJETADA ══ -->
+<section id="dfc">
+  <div class="stag"><span class="d"></span>DFC Projetada</div>
+  <div class="stitle">Fluxo de Caixa com <em>Novos Preços</em></div>
+  <p class="sdesc">Cenário moderado com migração gradual para os novos planos. Custo de professores de coletivas já incluído na rubrica de Pessoal Total. Pró-labore regularizado em R$5.000 por sócio (2 sócios = R$10.000/mês).</p>
+
+  <!-- CENÁRIOS -->
+  <div class="sc-g">
+    <div class="sc-c">
+      <span class="sc-tag" style="color:var(--red)">Conservador — –20% alunos</span>
+      <div class="sc-name">242 Alunos</div>
+      <div class="sc-rev" style="color:var(--amber)">R$ 187.545</div>
+      <div class="sc-rows">
+        <div class="sc-row"><span class="sl2">Ticket médio</span><span class="sv2">R$ 775</span></div>
+        <div class="sc-row"><span class="sl2">Total despesas</span><span class="sv2" style="color:var(--red)">R$ 107.040</span></div>
+        <div class="sc-row"><span class="sl2">FCO</span><span class="sv2 mpos">+R$ 80.505</span></div>
+        <div class="sc-row"><span class="sl2">vs. Jan/2026</span><span class="sv2 mpos">+R$ 96.221</span></div>
+      </div>
+    </div>
+    <div class="sc-c best">
+      <span class="sc-tag" style="color:var(--blue)">★ Moderado — Base da Projeção</span>
+      <div class="sc-name">273 Alunos</div>
+      <div class="sc-rev" style="color:var(--blue)">R$ 212.610</div>
+      <div class="sc-rows">
+        <div class="sc-row"><span class="sl2">Ticket médio</span><span class="sv2">R$ 779</span></div>
+        <div class="sc-row"><span class="sl2">Total despesas</span><span class="sv2" style="color:var(--red)">R$ 106.168</span></div>
+        <div class="sc-row"><span class="sl2">FCO</span><span class="sv2" style="color:var(--blue)">+R$ 106.442</span></div>
+        <div class="sc-row"><span class="sl2">vs. Jan/2026</span><span class="sv2" style="color:var(--blue)">+R$ 122.158</span></div>
+      </div>
+    </div>
+    <div class="sc-c">
+      <span class="sc-tag" style="color:var(--green)">Otimista — 303 Alunos</span>
+      <div class="sc-name">Migração Total</div>
+      <div class="sc-rev" style="color:var(--green)">R$ 234.850</div>
+      <div class="sc-rows">
+        <div class="sc-row"><span class="sl2">Ticket médio</span><span class="sv2">R$ 775</span></div>
+        <div class="sc-row"><span class="sl2">Total despesas</span><span class="sv2" style="color:var(--red)">R$ 107.582</span></div>
+        <div class="sc-row"><span class="sl2">FCO</span><span class="sv2 mpos">+R$ 127.268</span></div>
+        <div class="sc-row"><span class="sl2">vs. Jan/2026</span><span class="sv2 mpos">+R$ 142.984</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DFC TABLE -->
+  <div class="dfc-wrap">
+    <table class="dfc-tbl">
+      <thead>
+        <tr>
+          <th class="nh" style="text-align:left;min-width:230px">Conta</th>
+          <th class="nh">Jan/2026<br><span style="font-size:8px;opacity:.4">Real</span></th>
+          <th class="nh">A.V.</th>
+          <th class="bh">Projetado<br><span style="font-size:8px;opacity:.4">Moderado</span></th>
+          <th class="bh">A.V.</th>
+          <th class="gh">Variação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="grp"><td colspan="6">RECEITA OPERACIONAL</td></tr>
+        <tr>
+          <td><strong>Receita Operacional Total</strong></td>
+          <td class="mpos">R$ 86.714</td><td class="mneu">100%</td>
+          <td class="mpos" style="font-weight:700">R$ 212.610</td><td class="mneu">100%</td>
+          <td><span class="dp">+R$ 125.896 (+145,2%)</span></td>
+        </tr>
+        <tr class="grp" style="background:#fff9f0"><td colspan="6" style="color:var(--amber)">DESPESAS OPERACIONAIS</td></tr>
+        <tr>
+          <td>1. Deduções e Impostos sobre Receita<span style="font-family:Inter,sans-serif;font-size:10px;color:var(--light);display:block">Simples Nacional · 6% sobre receita bruta</span></td>
+          <td class="mneg">–R$ 4.829</td><td class="mneu" style="font-size:10px">5,6%</td>
+          <td class="mneg">–R$ 12.757</td><td class="mneu" style="font-size:10px">6,0%</td>
+          <td><span class="dn">+R$ 7.928 (base maior)</span></td>
+        </tr>
+        <tr>
+          <td>2. Pessoal Total<span style="font-family:Inter,sans-serif;font-size:10px;color:var(--light);display:block">Studio (prof + estagiários) + Professores coletivas · já consolidado</span></td>
+          <td class="mneg">–R$ 39.491</td><td class="mneg" style="font-size:10px">45,5%</td>
+          <td class="mneg">–R$ 39.491</td><td class="mneu" style="font-size:10px">18,6%</td>
+          <td class="mneu" style="font-size:10px">Mantido</td>
+        </tr>
+        <tr>
+          <td>3. Comercial e Marketing</td>
+          <td class="mneg">–R$ 4.520</td><td class="mneu" style="font-size:10px">5,2%</td>
+          <td class="mneg">–R$ 4.520</td><td class="mneu" style="font-size:10px">2,1%</td>
+          <td class="mneu" style="font-size:10px">—</td>
+        </tr>
+        <tr>
+          <td>4. Manutenção e Estrutura<span style="font-family:Inter,sans-serif;font-size:10px;color:var(--light);display:block">Teto implantado com controle de aprovação</span></td>
+          <td class="mneg">–R$ 29.576</td><td class="mneg" style="font-size:10px">34,1%</td>
+          <td class="mneg">–R$ 22.000</td><td class="mneu" style="font-size:10px">10,4%</td>
+          <td><span class="dp">–R$ 7.576</span></td>
+        </tr>
+        <tr>
+          <td>5. Despesas Administrativas</td>
+          <td class="mneg">–R$ 10.400</td><td class="mneu" style="font-size:10px">12,0%</td>
+          <td class="mneg">–R$ 10.400</td><td class="mneu" style="font-size:10px">4,9%</td>
+          <td class="mneu" style="font-size:10px">—</td>
+        </tr>
+        <tr>
+          <td>6. Despesas Financeiras e Bancárias<span style="font-family:Inter,sans-serif;font-size:10px;color:var(--light);display:block">Juros, tarifas, parcelamentos</span></td>
+          <td class="mneg">–R$ 9.386</td><td class="mneg" style="font-size:10px">10,8%</td>
+          <td class="mneg">–R$ 7.000</td><td class="mneu" style="font-size:10px">3,3%</td>
+          <td><span class="dp">–R$ 2.386</span></td>
+        </tr>
+        <tr>
+          <td>7. Sócios — Pró-labore<span style="font-family:Inter,sans-serif;font-size:10px;color:var(--light);display:block">2 sócios × R$5.000 = R$10.000/mês · regularizado</span></td>
+          <td class="mneg">–R$ 4.229</td><td class="mneu" style="font-size:10px">4,9%</td>
+          <td class="mneg">–R$ 10.000</td><td class="mneu" style="font-size:10px">4,7%</td>
+          <td><span class="dn">+R$ 5.771 (regularização)</span></td>
+        </tr>
+        <tr class="tot">
+          <td>Total Despesas Operacionais</td>
+          <td class="mneg">–R$ 102.431</td><td class="mneg" style="font-size:10px">118,1%</td>
+          <td class="mneg">–R$ 106.168</td><td class="mneu">49,9%</td>
+          <td><span class="dn">+R$ 3.737</span></td>
+        </tr>
+        <tr class="tot">
+          <td><strong>FCO — Fluxo de Caixa Operacional</strong></td>
+          <td class="mneg" style="font-size:13px">–R$ 15.717</td><td class="mneg">–18,1%</td>
+          <td class="mpos" style="font-size:13px">+R$ 106.442</td><td class="mpos">50,1%</td>
+          <td><span class="dp" style="font-size:12px;font-weight:700">+R$ 122.159</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted)">( – ) Investimentos realizados</td>
+          <td class="mneg">–R$ 965</td><td></td>
+          <td class="mneg">–R$ 965</td><td></td>
+          <td class="mneu" style="font-size:10px">Mantido</td>
+        </tr>
+        <tr class="tot-m">
+          <td>GCL — Geração de Caixa Líquido</td>
+          <td class="mneg" style="font-size:14px">–R$ 13.615</td><td></td>
+          <td style="color:#86efac;font-size:14px">+R$ 105.477</td><td></td>
+          <td style="color:#86efac;font-size:14px;font-weight:900">+R$ 119.092</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card info" style="margin-top:14px">
+    <strong style="color:var(--blue);font-size:11px;text-transform:uppercase;letter-spacing:1px">📌 Nota — Pessoal Consolidado</strong>
+    <p style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6">O custo de professores de aulas coletivas (estimado em R$5.688/mês pela DFC anterior) está <strong style="color:var(--text)">incluído dentro da rubrica "Pessoal Total" de R$39.491</strong>. A segregação por tipo de profissional é feita internamente na análise de custo por plano, mas no DFC aparece consolidado para refletir a forma como a empresa registra a folha de pagamento.</p>
+  </div>
+</section>
+
+<!-- ══ IMPACTO ══ -->
+<section id="impacto">
+  <div class="stag"><span class="d"></span>Impacto</div>
+  <div class="stitle">O que Muda com os <em>Preços Corretos</em></div>
+
+  <div class="impact">
+    <div class="it">Resultado — Cenário Moderado (273 alunos)</div>
+    <div class="iv">+R$ <em>119.092</em></div>
+    <p>de melhora no GCL mensal: de –R$13.615 para +R$105.477. Com pró-labore regularizado (2 × R$5.000) e manutenção controlada.</p>
+  </div>
+
+  <div class="g2" style="margin-bottom:14px">
+    <div class="card">
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--navy);margin-bottom:14px">Ticket Médio — Evolução</div>
+      <div class="bar-row"><div class="blbl">Hoje (R$286)</div><div class="btrack"><div class="bfill" style="background:var(--red)" data-w="36.8"></div></div><div class="bnum">R$ 286</div></div>
+      <div class="bar-row"><div class="blbl">Conservador</div><div class="btrack"><div class="bfill" style="background:var(--amber)" data-w="99.7"></div></div><div class="bnum">R$ 775</div></div>
+      <div class="bar-row"><div class="blbl">Moderado ★</div><div class="btrack"><div class="bfill" style="background:var(--blue)" data-w="100"></div></div><div class="bnum">R$ 779</div></div>
+      <div class="bar-row"><div class="blbl">Otimista</div><div class="btrack"><div class="bfill" style="background:var(--green)" data-w="99.5"></div></div><div class="bnum">R$ 775</div></div>
+    </div>
+    <div class="card">
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--navy);margin-bottom:14px">GCL — Resultado Mensal</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="padding:11px 14px;background:#fef2f2;border-radius:8px;display:flex;justify-content:space-between">
+          <span style="font-size:12px;color:var(--muted)">Janeiro/2026 (atual)</span>
+          <span style="font-family:'Montserrat',sans-serif;font-size:17px;font-weight:900;color:var(--red)">–R$ 13.615</span>
+        </div>
+        <div style="padding:11px 14px;background:#fff9f0;border-radius:8px;display:flex;justify-content:space-between">
+          <span style="font-size:12px;color:var(--muted)">Conservador (242 al.)</span>
+          <span style="font-family:'Montserrat',sans-serif;font-size:17px;font-weight:900;color:var(--amber)">+R$ 80.505</span>
+        </div>
+        <div style="padding:11px 14px;background:#eff6ff;border-radius:8px;display:flex;justify-content:space-between;border:2px solid var(--blue)">
+          <span style="font-size:12px;color:var(--blue);font-weight:600">Moderado (273 al.) ★</span>
+          <span style="font-family:'Montserrat',sans-serif;font-size:17px;font-weight:900;color:var(--blue)">+R$ 105.477</span>
+        </div>
+        <div style="padding:11px 14px;background:#f0fdf4;border-radius:8px;display:flex;justify-content:space-between">
+          <span style="font-size:12px;color:var(--muted)">Otimista (303 al.)</span>
+          <span style="font-family:'Montserrat',sans-serif;font-size:17px;font-weight:900;color:var(--green)">+R$ 127.268</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="card ok">
+      <strong style="color:var(--green);font-size:11px;text-transform:uppercase;letter-spacing:1px">✅ Mudanças positivas</strong>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:10px">
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--green)">→</span>FCO positivo no 1° mês</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--green)">→</span>Ticket médio +170% (R$286→R$779)</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--green)">→</span>Margem PRO: 55,2%</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--green)">→</span>Pró-labore regularizado R$5k/sócio</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--green)">→</span>Coletivas RD viável a R$450 (41,3%)</li>
+      </ul>
+    </div>
+    <div class="card warn">
+      <strong style="color:var(--amber);font-size:11px;text-transform:uppercase;letter-spacing:1px">⚠ Atenção</strong>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:10px">
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--amber)">→</span>Novos preços para novos alunos 1º</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--amber)">→</span>Migração base em 60–90 dias</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--amber)">→</span>Perda de ~10% prevista no moderado</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--amber)">→</span>Manutenção: teto R$22k aprovado</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--amber)">→</span>Desconto máximo: 10%</li>
+      </ul>
+    </div>
+    <div class="card info">
+      <strong style="color:var(--blue);font-size:11px;text-transform:uppercase;letter-spacing:1px">📋 Próximos passos</strong>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:10px">
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--blue)">1.</span>Publicar novos preços esta semana</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--blue)">2.</span>Criar material de apresentação</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--blue)">3.</span>DRE mês 1 com Extat Group</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--blue)">4.</span>Lançar plano Coletivas RD</li>
+        <li style="font-size:12px;color:var(--muted);padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--blue)">5.</span>Revisão em 90 dias</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <div class="fb">EXTAT<em> GROUP</em></div>
+    <div style="font-size:9px;color:rgba(255,255,255,.3);margin-top:5px;letter-spacing:2px;font-family:'Montserrat',sans-serif">GESTÃO · DIAGNÓSTICO · TRANSFORMAÇÃO</div>
+  </div>
+  <p>Studio 1:3 prof+estag · Coletivas 1:15 · Pró-labore 2×R$5k<br><strong style="color:rgba(255,255,255,.6)">RD Performance Academia Boutique</strong><br>Extat Group © 2026 · Confidencial</p>
+</footer>
+
+<script>
+const obs = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if(e.isIntersecting){
+      e.target.classList.add('vis');
+      e.target.querySelectorAll('.bfill[data-w]').forEach(b => b.style.width = b.dataset.w+'%');
+    }
+  });
+},{threshold:0.07});
+document.querySelectorAll('section').forEach(s => obs.observe(s));
+
+window.addEventListener('scroll',()=>{
+  let cur='';
+  document.querySelectorAll('[id]').forEach(s=>{if(window.scrollY>=s.offsetTop-80) cur=s.id;});
+  document.querySelectorAll('.topbar-nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+cur));
+});
+
+// COSTS
+const COSTS = {ess:{p:680,ct:309.86},pro:{p:890,ct:399.01},eli:{p:1490,ct:648.57},off:{p:490,ct:267.38},col:{p:450,ct:264.18}};
+const DESP_BASE = 39491+4520+22000+10400+7000+10000; // pessoal+comercial+manut+admin+fin+socios
+
+function showFid(btn, panelId){
+  document.querySelectorAll('.fidtab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.fidpanel').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById(panelId).classList.add('on');
+}
+
+function fmt(n){return 'R$ '+Math.round(n).toLocaleString('pt-BR');}
+
+function updateSim(){
+  let rev=0,mg=0,al=0;
+  const rows=[];
+  ['ess','pro','eli','off','col'].forEach(id=>{
+    const n=+document.getElementById('s-'+id).value;
+    document.getElementById('v-'+id).textContent=n;
+    const r=n*COSTS[id].p, m=r-n*COSTS[id].ct-r*0.055-r*0.06;
+    rev+=r; mg+=m; al+=n;
+    const nm={ess:'Essencial',pro:'PRO ⭐',eli:'Elite',off:'Off-Peak',col:'Coletivas'}[id];
+    if(n>0) rows.push({nm,n,r,m,pct:(m/r*100)});
+  });
+  const nd=+document.getElementById('s-dia').value;
+  document.getElementById('v-dia').textContent=nd;
+  const rd=nd*120; rev+=rd;
+
+  const desp=DESP_BASE+rev*0.06;
+  const fco=rev-desp;
+  const tk=al>0?rev/al:0;
+  const mgp=rev>0?(rev-desp)/rev*100:0; // FCO margin
+  const fc=fco>=0?'var(--green)':'var(--red)';
+  const fs=fco>=0?'+':'';
+
+  document.getElementById('res-cards').innerHTML=`
+    <div class="res-c"><div class="rl">Receita</div><div class="rv" style="color:var(--blue)">${fmt(rev)}</div></div>
+    <div class="res-c"><div class="rl">Ticket Médio</div><div class="rv" style="color:var(--navy)">${fmt(tk)}</div></div>
+    <div class="res-c"><div class="rl">${al} alunos</div><div class="rv" style="color:var(--navy)">${al}</div></div>
+    <div class="res-c"><div class="rl">FCO Proj.</div><div class="rv" style="color:${fc}">${fs}${fmt(fco)}</div></div>
+  `;
+  const bk=rows.map(r=>`<div class="bkrow"><span class="bl2">${r.nm} (${r.n})</span><span class="bv">${fmt(r.r)} · <span style="color:var(--green)">${r.pct.toFixed(0)}%</span></span></div>`).join('');
+  document.getElementById('res-bk').innerHTML=`
+    ${bk}
+    ${nd>0?`<div class="bkrow"><span class="bl2">Trial Day (${nd}×R$120)</span><span class="bv">${fmt(rd)}</span></div>`:''}
+    <div class="bkrow"><span class="bl2">Despesas estimadas</span><span class="bv" style="color:var(--red)">${fmt(desp)}</span></div>
+    <div class="bkrow tot"><span class="bl2">FCO Estimado</span><span class="bv" style="color:${fc}">${fs}${fmt(fco)}</span></div>
+  `;
+}
+
+function resetSim(){
+  const d={ess:76,pro:105,eli:19,off:35,col:38,dia:41};
+  Object.entries(d).forEach(([k,v])=>document.getElementById('s-'+k).value=v);
+  updateSim();
+}
+updateSim();
+</script>
+</body>
+</html>
